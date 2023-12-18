@@ -1,0 +1,31 @@
+From 27c857a0e1a1b6f39ac1f92a19cdf3edbcbf3845 Mon Sep 17 00:00:00 2001
+From: znley <shanjiantao@loongson.cn>
+Date: Fri, 15 Dec 2023 09:13:09 +0000
+Subject: [PATCH 2/2] loong64 fix: docker swarm run failed
+
+---
+ .../docker/swarmkit/manager/scheduler/filter.go           | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/vendor/github.com/docker/swarmkit/manager/scheduler/filter.go b/vendor/github.com/docker/swarmkit/manager/scheduler/filter.go
+index df0ccbc..7498fdb 100644
+--- a/vendor/github.com/docker/swarmkit/manager/scheduler/filter.go
++++ b/vendor/github.com/docker/swarmkit/manager/scheduler/filter.go
+@@ -305,6 +305,14 @@ func (f *PlatformFilter) platformEqual(imgPlatform, nodePlatform api.Platform) b
+ 		nodePlatform.Architecture = "arm64"
+ 	}
+ 
++	// normalize "loongarch64" architectures to "loong64"
++	if imgPlatform.Architecture == "loongarch64" {
++		imgPlatform.Architecture = "loong64"
++	}
++	if nodePlatform.Architecture == "loongarch64" {
++		nodePlatform.Architecture = "loong64"
++	}
++
+ 	if (imgPlatform.Architecture == "" || imgPlatform.Architecture == nodePlatform.Architecture) && (imgPlatform.OS == "" || imgPlatform.OS == nodePlatform.OS) {
+ 		return true
+ 	}
+-- 
+2.39.3
+

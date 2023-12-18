@@ -1,0 +1,29 @@
+From 7a98c92ec1755d88d14473f50a1ba3c9075c772d Mon Sep 17 00:00:00 2001
+From: Wenlong Zhang <zhangwenlong@loongson.cn>
+Date: Fri, 30 Dec 2022 06:05:16 +0000
+Subject: [PATCH] add loong64 support for moby
+
+---
+ vendor/go.etcd.io/bbolt/bolt_loong64.go | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+ create mode 100644 vendor/go.etcd.io/bbolt/bolt_loong64.go
+
+diff --git a/vendor/go.etcd.io/bbolt/bolt_loong64.go b/vendor/go.etcd.io/bbolt/bolt_loong64.go
+new file mode 100644
+index 0000000..d02d59e
+--- /dev/null
++++ b/vendor/go.etcd.io/bbolt/bolt_loong64.go
+@@ -0,0 +1,10 @@
++// +build loong64 
++  
++package bbolt
++
++// maxMapSize represents the largest mmap size supported by Bolt.
++const maxMapSize = 0x8000000000 // 512GB
++
++// maxAllocSize is the size used when creating array pointers.
++const maxAllocSize = 0x7FFFFFFF
++
+-- 
+2.27.0
+

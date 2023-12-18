@@ -1,4 +1,4 @@
-%define anolis_release 1
+%define anolis_release 3
 %global debug_package %{nil}
 
 %global _gitcommit_engine f756502
@@ -25,6 +25,12 @@ Source2:  tini-0.19.0.tar.gz
 Source3:  libnetwork-339b972b.tar.gz
 Source4:  docker.service
 Source5:  docker.socket
+Source6:  sys.tar.gz
+Source7:  net.tar.gz
+
+Patch100:  0100-add-loong64-support-for-moby.patch
+Patch101:  0101-loong64-fix-seccomp-failed.patch
+Patch102:  0102-loong64-fix-docker-swarm-run-failed.patch
 
 Requires: %{name}-engine = %{version}-%{release}
 Requires: %{name}-client = %{version}-%{release}
@@ -97,6 +103,11 @@ Docker client binary and related utilities
 %prep
 %setup -q -n %{_source_client}
 %setup -q -T -n %{_source_engine} -b 1
+%ifarch loongarch64
+%patch100 -p1
+%patch101 -p1
+%patch102 -p1
+%endif
 %setup -q -T -n %{_source_docker_init} -b 2
 %setup -q -T -n %{_source_docker_proxy} -b 3
 
@@ -107,6 +118,12 @@ export DOCKER_GITCOMMIT=%{_gitcommit_engine}
 export DOCKER_BUILDTAGS="exclude_graphdriver_btrfs"
 
 pushd %{_builddir}/%{_source_engine}
+%ifarch loongarch64
+rm -rf vendor/golang.org/x/sys
+rm -rf vendor/golang.org/x/net
+tar -xf %{SOURCE6} -C vendor/golang.org/x/
+tar -xf %{SOURCE7} -C vendor/golang.org/x
+%endif
 AUTO_GOPATH=1 VERSION=%{version} PRODUCT=docker hack/make.sh dynbinary
 popd
 
@@ -129,6 +146,12 @@ popd
 
 # build cli
 pushd %{_builddir}/%{_source_client}
+%ifarch loongarch64
+rm -rf vendor/golang.org/x/sys
+rm -rf vendor/golang.org/x/net
+tar -xf %{SOURCE6} -C vendor/golang.org/x/
+tar -xf %{SOURCE7} -C vendor/golang.org/x
+%endif
 mkdir -p .gopath/src/github.com/docker/cli
 export GOPATH=`pwd`/.gopath
 rm -rf .gopath/src/github.com/docker/cli
@@ -206,5 +229,12 @@ fi
 %systemd_postun_with_restart docker.service
 
 %changelog
+* Mon Dec 18 2023 znley <shanjiantao@loongson.cn> - 20.10.16-3
+- loong64 fix: seccomp not supoort
+- loong64 fix: swarm run failed
+
+* Fri Dec 30 2022 Wenlong Zhang <zhangwenlong@loongson.cn> - 20.10.16-2
+- add loong64 support for docker
+
 * Mon May 23 2022 Yuanhong Peng <yummypeng@linux.alibaba.com> -20.10.16-1
 - Init repo from docker-ce-packaging upstream
